@@ -1,0 +1,12 @@
+PARAMS=()
+
+HEADER='==========================================================================================================
+[F1]Explain [F3]Suspend [F4]Resume [F6]Reconcile [F8]Delete)
+Scrolling (SHIFT - up/down) || CTRL-/ (change view) || CTRL-R (refresh) || Ctrl-z (ready only) || Ctrl-x (non-ready only)
+=========================================================================================================='
+
+PARAMS+=(--bind "f1:execute:explain_obj ${FLUX_RS}")
+PARAMS+=(--bind "f3:execute:confirm "suspend" \"$FLUX_SR_TYPE/{2}\" && flux suspend $FLUX_SR_TYPE {2} -n {1}")
+PARAMS+=(--bind "f4:execute:confirm "resume" \"$FLUX_SR_TYPE/{2}\" && flux resume $FLUX_SR_TYPE {2} -n {1}")
+PARAMS+=(--bind "f6:execute:confirm "reconcile" \"$FLUX_SR_TYPE/{2}\" && flux reconcile $FLUX_SR_TYPE {2} -n {1}")
+PARAMS+=(--bind "f8:execute:confirm "delete" $FLUX_RS/{2} && flux delete $FLUX_SR_TYPE {2} -n {1}")

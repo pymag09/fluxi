@@ -1,0 +1,6 @@
+HEADER='==========================================================================================================
+[F1]Explain [F3]Suspend [F4]Resume [F5]YAML [F6]Reconcile [F8]Delete)
+Scrolling (SHIFT - up/down) || CTRL-/ (change view) || CTRL-R (refresh) || Ctrl-z (ready only) || Ctrl-x (non-ready only)
+=========================================================================================================='
+
+PARAMS+=(--bind "f5:execute:flux export $EXPORT_KIND {2} -n {1} | less")
