@@ -42,7 +42,7 @@ __get_flux_events_all__() {
     --prompt "CL: $(kubectl config current-context | sed 's/-context$//') > " \
     --header $'>> Ctrl+r: Reload  <<\n\n' \
     --bind 'enter:accept' \
-    --bind 'ctrl-r:reload:$FZF_DEFAULT_COMMAND'
+    --bind 'ctrl-r:reload:flux events -A'
 }
 
 __get_flux_obj_all__(){
