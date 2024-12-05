@@ -5,6 +5,7 @@ Simple and light-weight UI for flux.
 
 * `fzf` (command-line fuzzy finder) - [https://github.com/junegunn/fzf](https://github.com/junegunn/fzf)
 * `yq` (portable command-line YAML processor)
+* `colordiff` a wrapper for diff and produces the same output as diff but with coloured syntax highlighting at the command line to improve readability
 
 ## Installation
 fluxi requires you to add two line to your .bashrc file.

@@ -82,6 +82,55 @@ __init_obj__() {
     source "$FLUXI_PATH"/fxi/"$(echo ${FLUX_RS} | sed -E 's/\s/_/')"/config
   fi
 }
+__obj_diff__() {
+  if [[ "$2" == "full" ]]; then
+    mode="^$"
+  else
+    mode="^[[:space:]]*[^|>]*$"
+  fi
+  local_kustomization=$(kustomize build $(dirname ${1}) | awk 'NR==1 && $0!="---" {print "---"} {print}')
+  target=$(echo "${local_kustomization}" | head -10 | grep -E 'kind:|name:|namespace:' | cut -d ':' -f 2 | tr '[:upper:]' '[:lower:]')
+  type=$(echo $target | awk '{print $1}')
+  if [[ "$type" == "helmrelease" || "$type" == "kustomization" ]]; then
+    colordiff -y <(printf "%s\n" "${local_kustomization}") <(printf "%s\n" "$(flux export $(echo $target | awk '{print $1}') $(echo $target | awk '{print $2}') -n $(echo $target | awk '{print $3}'))")  | grep -v $mode | less -R
+  else
+    cat << EOF
+▗▄▄▄▖▗▖ ▗▖▗▄▄▄▖ ▗▄▄▖     ▗▄▖  ▗▄▄▖▗▄▄▄▖▗▄▄▄▖ ▗▄▖ ▗▖  ▗▖                                                         
+  █  ▐▌ ▐▌  █  ▐▌       ▐▌ ▐▌▐▌     █    █  ▐▌ ▐▌▐▛▚▖▐▌                                                         
+  █  ▐▛▀▜▌  █   ▝▀▚▖    ▐▛▀▜▌▐▌     █    █  ▐▌ ▐▌▐▌ ▝▜▌                                                         
+  █  ▐▌ ▐▌▗▄█▄▖▗▄▄▞▘    ▐▌ ▐▌▝▚▄▄▖  █  ▗▄█▄▖▝▚▄▞▘▐▌  ▐▌                                                         
+                                                                                                                
+                                                                                                                
+                                                                                                                
+▗▄▄▄▖ ▗▄▄▖    ▗▖  ▗▖ ▗▄▖▗▄▄▄▖    ▗▖  ▗▖ ▗▄▖ ▗▖   ▗▄▄▄▖▗▄▄▄                                                      
+  █  ▐▌       ▐▛▚▖▐▌▐▌ ▐▌ █      ▐▌  ▐▌▐▌ ▐▌▐▌     █  ▐▌  █                                                     
+  █   ▝▀▚▖    ▐▌ ▝▜▌▐▌ ▐▌ █      ▐▌  ▐▌▐▛▀▜▌▐▌     █  ▐▌  █                                                     
+▗▄█▄▖▗▄▄▞▘    ▐▌  ▐▌▝▚▄▞▘ █       ▝▚▞▘ ▐▌ ▐▌▐▙▄▄▖▗▄█▄▖▐▙▄▄▀                                                     
+                                                                                                                
+                                                                                                                
+                                                                                                                
+▗▄▄▄▖ ▗▄▖ ▗▄▄▖     ▗▄▄▄▖▗▖ ▗▖▗▄▄▄▖ ▗▄▄▖    ▗▄▄▄▖▗▖  ▗▖▗▄▄▖ ▗▄▄▄▖     ▗▄▖ ▗▄▄▄▖     ▗▄▖ ▗▄▄▖    ▗▖▗▄▄▄▖ ▗▄▄▖▗▄▄▄▖
+▐▌   ▐▌ ▐▌▐▌ ▐▌      █  ▐▌ ▐▌  █  ▐▌         █   ▝▚▞▘ ▐▌ ▐▌▐▌       ▐▌ ▐▌▐▌       ▐▌ ▐▌▐▌ ▐▌   ▐▌▐▌   ▐▌     █  
+▐▛▀▀▘▐▌ ▐▌▐▛▀▚▖      █  ▐▛▀▜▌  █   ▝▀▚▖      █    ▐▌  ▐▛▀▘ ▐▛▀▀▘    ▐▌ ▐▌▐▛▀▀▘    ▐▌ ▐▌▐▛▀▚▖   ▐▌▐▛▀▀▘▐▌     █  
+▐▌   ▝▚▄▞▘▐▌ ▐▌      █  ▐▌ ▐▌▗▄█▄▖▗▄▄▞▘      █    ▐▌  ▐▌   ▐▙▄▄▖    ▝▚▄▞▘▐▌       ▝▚▄▞▘▐▙▄▞▘▗▄▄▞▘▐▙▄▄▖▝▚▄▄▖  █  
+                                                                                                                
+EOF
+  fi
+}
+__obj_diff_explorer__() {
+  find ${HOME} -name "kustomization.y?ml" | fzf --info=inline \
+  --layout=reverse \
+  --header-lines=0 \
+  --header '==========================================================================================================
+[F3]Full diff
+=========================================================================================================='\
+  --border=double \
+  --bind "f3:execute:__obj_diff__ {1} 'full'" \
+  --preview-window up:follow,70%,wrap \
+  --border-label="╢ Add file to diff ╟" --preview "__obj_diff__ {1} 'brief'"
+}
+
+export -f __obj_diff__
 
 fluxi() {
   __parse_command "$(echo "$@")"
@@ -132,6 +181,7 @@ fluxi() {
     "event" ) __get_flux_events_all__;;
     "logs" ) __flux_logs__;;
     "log" ) __flux_logs__;;
+    "compare" ) __obj_diff_explorer__;;
     *) flux $cmd;;
   esac
 }
