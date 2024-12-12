@@ -86,7 +86,7 @@ __obj_diff__() {
   if [[ "$2" == "full" ]]; then
     mode="^$"
   else
-    mode="^[[:space:]]*[^|>]*$"
+    mode="^[[:space:]]*[^|>|<]*$"
   fi
   local_kustomization=$(kustomize build $(dirname ${1}) | awk 'NR==1 && $0!="---" {print "---"} {print}')
   target=$(echo "${local_kustomization}" | head -10 | grep -E 'kind:|name:|namespace:' | cut -d ':' -f 2 | tr '[:upper:]' '[:lower:]')
